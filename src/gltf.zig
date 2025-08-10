@@ -1,7 +1,5 @@
-const Asset = @import("./gltf/asset.zig");
+pub const Asset = @import("./gltf/asset.zig");
+pub const Buffer = @import("./gltf/buffer.zig");
 
 asset: Asset,
-
-test "Import tests" {
-    _ = @import("./gltf/asset.zig");
-}
+buffers: []const Buffer,
