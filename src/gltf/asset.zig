@@ -14,8 +14,8 @@ copyright: ?[]const u8 = null,
 generator: ?[]const u8 = null,
 version: Version,
 minVersion: ?Version = null,
-// extensions: ?ObjectMap = null,
-// extras: ?Extras = null,
+extensions: ?[]const u8 = null, // TODO: Implement Extensions
+extras: ?Extras = null,
 
 pub fn parseFromSlice(json_data: []const u8, allocator: std.mem.Allocator) !Self {
     const AssetJson = struct {
@@ -23,8 +23,8 @@ pub fn parseFromSlice(json_data: []const u8, allocator: std.mem.Allocator) !Self
         generator: ?[]const u8 = null,
         version: []const u8,
         minVersion: ?[]const u8 = null,
-        // extensions: ?[]const u8 = null,
-        // extras: ?[]const u8 = null,
+        extensions: ?[]const u8 = null,
+        extras: ?[]const u8 = null,
     };
 
     const parsed_json: std.json.Parsed(AssetJson) = try std.json.parseFromSlice(AssetJson, allocator, json_data, .{});
