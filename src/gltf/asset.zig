@@ -4,41 +4,66 @@ const ObjectMap = std.json.ObjectMap;
 const Self = @This();
 
 pub const Version = @import("./asset/version.zig");
+pub const Extensions = @import("./asset/extensions.zig");
 pub const Extras = union(enum) {
     object: ObjectMap,
     anyvalue: []const u8,
 };
 
-copyright: ?[]const u8,
-generator: ?[]const u8,
+copyright: ?[]const u8 = null,
+generator: ?[]const u8 = null,
 version: Version,
-minVersion: ?Version,
-extensions: ?ObjectMap,
-extras: Extras,
+minVersion: ?Version = null,
+// extensions: ?ObjectMap = null,
+// extras: ?Extras = null,
+
+pub fn parseFromSlice(json_data: []const u8, allocator: std.mem.Allocator) !Self {
+    const AssetJson = struct {
+        copyright: ?[]const u8 = null,
+        generator: ?[]const u8 = null,
+        version: []const u8,
+        minVersion: ?[]const u8 = null,
+        // extensions: ?[]const u8 = null,
+        // extras: ?[]const u8 = null,
+    };
+
+    const parsed_json: std.json.Parsed(AssetJson) = try std.json.parseFromSlice(AssetJson, allocator, json_data, .{});
+    defer parsed_json.deinit();
+
+    const result: Self = Self{
+        .copyright = parsed_json.value.copyright,
+        .generator = parsed_json.value.generator,
+        .version = try Version.from_string(parsed_json.value.version),
+        .minVersion = if (parsed_json.value.minVersion == null)
+            null
+        else
+            try Version.from_string(parsed_json.value.minVersion.?),
+    };
+
+    return result;
+}
 
 test "Import tests" {
     _ = @import("./asset/version.zig");
 }
 
 test "parse_from_slice" {
-    // const allocator = testing.allocator;
-    // const json_data: []const u8 =
-    //     \\{
-    //     \\  "generator": "Khronos glTF Blender I/O v4.5.47",
-    //     \\  "version": "2.0"
-    //     \\}
-    // ;
+    const allocator = testing.allocator;
+    const json_data: []const u8 =
+        \\{
+        \\  "generator": "Khronos glTF Blender I/O v4.5.47",
+        \\  "version": "2.0"
+        \\}
+    ;
 
-    std.debug.print("{s}\n", .{@typeName(Self)});
+    const result = try Self.parseFromSlice(json_data, allocator);
 
-    // const result: std.json.Parsed(Self) = try std.json.parseFromSlice(Self, allocator, json_data, .{});
+    if (result.generator == null) {
+        @panic("The generator value is null");
+    } else {
+        try testing.expectEqualStrings(result.generator.?, "Khronos glTF Blender I/O v4.5.47");
+    }
 
-    // if (result.value.generator == null) {
-    //     @panic("The generator value is null");
-    // } else {
-    //     try testing.expectEqual(result.value.generator.?, "Khronos glTF Blender I/O v4.5.47");
-    // }
-
-    // try testing.expect(result.value.version.major == 2);
-    // try testing.expect(result.value.version.minor == 0);
+    try testing.expect(result.version.major == 2);
+    try testing.expect(result.version.minor == 0);
 }
