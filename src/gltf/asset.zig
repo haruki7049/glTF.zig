@@ -4,18 +4,13 @@ const ObjectMap = std.json.ObjectMap;
 const Self = @This();
 
 pub const Version = @import("./asset/version.zig");
-pub const Extensions = @import("./asset/extensions.zig");
-pub const Extras = union(enum) {
-    object: ObjectMap,
-    anyvalue: []const u8,
-};
 
 copyright: ?[]const u8 = null,
 generator: ?[]const u8 = null,
 version: Version,
 minVersion: ?Version = null,
-extensions: ?[]const u8 = null, // TODO: Implement Extensions
-extras: ?Extras = null,
+extensions: ?[]const u8 = null,
+extras: ?[]const u8 = null,
 
 pub fn parseFromSlice(json_data: []const u8, allocator: std.mem.Allocator) !Self {
     const AssetJson = struct {
